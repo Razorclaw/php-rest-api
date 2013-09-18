@@ -1,4 +1,12 @@
 <?php
+
+class ErrorHandler {
+	function raise($code, $message) {
+		header("HTTP/1.0 $code $message");
+		exit();
+	}
+}
+
 class RestApi {
 	private $_hs;
 	private $_format;
@@ -18,7 +26,8 @@ class RestApi {
 		if (array_key_exists($rm, $this->_hs)) {
 			$data = self::parse_data($rm);
 			$call = $this->_hs[$rm];
-			$result = $call($data);
+			$e = new ErrorHandler();
+			$result = $call($data, $e);
 			echo $this->convert_result($result);
 		}
 	}
@@ -38,8 +47,10 @@ class RestApi {
 	function convert_result($result) {
 		switch($this->_format) {
 			case 'JSON':
+				header('Content-type: application/json');
 				return self::to_json($result);
 			case 'XML':
+				header('Content-type: text/xml');
 				return self::to_xml($result);
 			default:
 				return $result;
