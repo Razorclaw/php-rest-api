@@ -18,16 +18,21 @@ class RestApi {
 		if (array_key_exists($rm, $this->_hs)) {
 			$data = self::parse_data($rm);
 			$call = $this->_hs[$rm];
-			$result = $call();
+			$result = $call($data);
 			echo $this->convert_result($result);
-		} else {
-			echo $rm;
-			print_r($this->_hs);
 		}
 	}
 
 	static function parse_data($rm) {
-		return array();
+		switch($rm) {
+			case 'POST':
+				return $_POST;
+			case 'PUT':
+				parse_str(file_get_contents("php://input"), $data);
+				return $data;
+			default:
+				return array();
+		}
 	}
 
 	function convert_result($result) {

@@ -11,5 +11,9 @@ $api->on('get', function($data) {
 	return array('method' => 'get');
 });
 
+$api->on('put', function($data) {
+	return $data;
+});
+
 $api->handle();
 ?>
