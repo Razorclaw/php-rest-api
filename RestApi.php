@@ -30,6 +30,7 @@ class RestApi {
 			$result = $call($data, $e);
 			echo $this->convert_result($result);
 		}
+		exit();
 	}
 
 	static function parse_data($rm) {
