@@ -1,14 +1,14 @@
 <?php
 include 'RestApi.php';
 
-$api = new RestApi();
+$api = new RestApi('json');
 
 $api->on('post', function($data) {
-	return 'post !';
+	return array('method' => 'post');
 });
 
 $api->on('get', function($data) {
-	return 'get !';
+	return array('method' => 'get');
 });
 
 $api->handle();

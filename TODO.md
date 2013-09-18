@@ -1,7 +1,6 @@
 TODO
 ====
 
-- JSON
 - XML
 - HTTP error code
 - exit in handler
