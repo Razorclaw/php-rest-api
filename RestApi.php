@@ -79,7 +79,31 @@ class RestApi
 
     static function to_xml($result)
     {
-        // TODO
-        return $result;
+        $xml = new SimpleXMLElement('<?xml version="1.0"?><root></root>');
+        if (is_array($result))
+        {
+            self::array_to_xml($result, $xml);
+        }
+        else
+        {
+            $xml->addChild("root", $result);
+        }
+        return $xml->asXML();
+    }
+
+    static function array_to_xml($array, &$xml)
+    {
+        foreach ($array as $key => $value)
+        {
+            if (is_array($value))
+            {
+                $node = $xml->addChild("$key");
+                self::array_to_xml($value, $node);
+            }
+            else
+            {
+                $xml->addChild("$key", "$value");
+            }
+        }
     }
 }
