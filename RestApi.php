@@ -1,14 +1,5 @@
 <?php
 
-class ErrorHandler
-{
-    function raise($code, $message)
-    {
-        header("HTTP/1.0 $code $message");
-        exit();
-    }
-}
-
 class RestApi
 {
     private $_format;
@@ -21,10 +12,15 @@ class RestApi
         $this->_method = strtolower($_SERVER['REQUEST_METHOD']);
     }
 
+    static function raise($code, $message)
+    {
+        header("HTTP/1.0 $code $message");
+        exit();
+    }
+
     function bind($method, $callback)
     {
-        if ($method == $this->_method)
-        {
+        if ($method == $this->_method) {
             $this->_callback = $callback;
         }
         return $this;
@@ -69,10 +65,8 @@ class RestApi
 
     static function to_json($result)
     {
-        if ($json = json_encode($result)) {
-            $error = json_last_error();
-
-            // TODO: put error message
+        if (!($json = json_encode($result))) {
+            self::raise(500, "JSON Error: " + json_last_error());
         }
         return $json;
     }
@@ -80,12 +74,9 @@ class RestApi
     static function to_xml($result)
     {
         $xml = new SimpleXMLElement('<?xml version="1.0"?><root></root>');
-        if (is_array($result))
-        {
+        if (is_array($result)) {
             self::array_to_xml($result, $xml);
-        }
-        else
-        {
+        } else {
             $xml->addChild("root", $result);
         }
         return $xml->asXML();
@@ -93,15 +84,11 @@ class RestApi
 
     static function array_to_xml($array, &$xml)
     {
-        foreach ($array as $key => $value)
-        {
-            if (is_array($value))
-            {
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
                 $node = $xml->addChild("$key");
                 self::array_to_xml($value, $node);
-            }
-            else
-            {
+            } else {
                 $xml->addChild("$key", "$value");
             }
         }
