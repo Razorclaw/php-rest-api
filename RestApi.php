@@ -10,6 +10,7 @@ class RestApi
     {
         $this->_format = strtolower($format);
         $this->_method = strtolower($_SERVER['REQUEST_METHOD']);
+        $this->_callback = NULL;
     }
 
     static function raise($code, $message)
@@ -28,8 +29,12 @@ class RestApi
 
     function handle()
     {
-        $data   = $this->parse_data();
-        $result = $this->_callback($data, new ErrorHandler());
+        $data = $this->parse_data();
+        if (($callback = $this->_callback)) {
+            $result = $callback($data);
+        } else {
+            $result = array('1' => 'empty');
+        }
         $this->display($result);
         exit();
     }
