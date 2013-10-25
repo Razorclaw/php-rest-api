@@ -1,11 +1,11 @@
 <?php
 include 'RestApi.php';
 
-$api = new RestApi('json');
+$api = new RestApi('print_r');
 
 $api->bind('post', function($data)
 {
-    return array('method' => 'post');
+    return $data;
 })->bind('get', function($data, $e)
 {
     RestApi::raise(404, "Nooot Founds");
