@@ -13,15 +13,9 @@ class RestApi
         $this->_callback = NULL;
     }
 
-    static function raise($code, $message)
-    {
-        header("HTTP/1.0 $code $message");
-        exit();
-    }
-
     function bind($method, $callback)
     {
-        if ($method == $this->_method) {
+        if (strtolower($method) == $this->_method) {
             $this->_callback = $callback;
         }
         return $this;
@@ -41,13 +35,23 @@ class RestApi
 
     function parse_data()
     {
-        switch ($this->_method) {
-            case 'post':
-                return $_POST;
-            case 'put':
-                parse_str(file_get_contents("php://input"), $data);
-                return $data;
+        $input = file_get_contents("php://input");
+        switch ($_SERVER['CONTENT_TYPE']) {
             default:
+            case 'application/x-www-form-urlencoded':
+                parse_str($input, $data);
+                return $data;
+            case 'application/json':
+            case 'application/x-javascript':
+            case 'text/javascript':
+            case 'text/x-javascript':
+            case 'text/x-json':
+                return json_decode($input, true);
+            case 'text/xml':
+            case 'application/xml':
+            case 'multipart/form-data':
+            case 'text/plain':
+                trigger_error("RestApi: Unsupported content-type: " . $_SERVER['CONTENT_TYPE']);
                 return array();
         }
     }
@@ -97,5 +101,11 @@ class RestApi
                 $xml->addChild("$key", "$value");
             }
         }
+    }
+
+    static function raise($code, $message)
+    {
+        header("HTTP/1.0 $code $message");
+        exit();
     }
 }
