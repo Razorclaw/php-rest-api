@@ -1,7 +1,7 @@
 <?php
 include 'RestApi.php';
 
-$api = new RestApi('print_r');
+$api = new RestApi('json');
 
 $api->bind('post', function($data)
 {
