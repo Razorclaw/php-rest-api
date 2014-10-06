@@ -32,12 +32,22 @@ class RestApi
         $this->display($result);
         exit();
     }
+	
+	static function contentType()
+	{
+		if (empty($_SERVER['CONTENT_TYPE'])) {
+			return '';
+		}
+		$contentType = explode(';', $_SERVER['CONTENT_TYPE']);
+		return $contentType[0];
+	}
 
     function parse_data()
     {
         $input = file_get_contents("php://input");
-        switch ($_SERVER['CONTENT_TYPE']) {
-            default:
+        $contentType = self::contentType();
+        switch ($contentType) {
+			default:
             case 'application/x-www-form-urlencoded':
                 parse_str($input, $data);
                 return $data;
@@ -51,7 +61,7 @@ class RestApi
             case 'application/xml':
             case 'multipart/form-data':
             case 'text/plain':
-                trigger_error("RestApi: Unsupported content-type: " . $_SERVER['CONTENT_TYPE']);
+                trigger_error("RestApi: Unsupported content-type: $contentType");
                 return array();
         }
     }
@@ -60,11 +70,11 @@ class RestApi
     {
         switch ($this->_format) {
             case 'json':
-                header('Content-type: application/json');
+                header('Content-type: application/json; charset=utf-8');
                 echo self::to_json($result);
                 break;
             case 'xml':
-                header('Content-type: text/xml');
+                header('Content-type: text/xml; charset=utf-8');
                 echo self::to_xml($result);
                 break;
             default:
@@ -91,14 +101,27 @@ class RestApi
         return $xml->asXML();
     }
 
+    /**
+     * @param $array
+     * @param SimpleXMLElement $xml
+     */
     static function array_to_xml($array, &$xml)
     {
         foreach ($array as $key => $value) {
             if (is_array($value)) {
-                $node = $xml->addChild("$key");
+                if (is_int($key)) {
+                    $node = $xml->addChild("element");
+                    $node->addAttribute("id", $key);
+                } else {
+                    $node = $xml->addChild("$key");
+                }
                 self::array_to_xml($value, $node);
             } else {
-                $xml->addChild("$key", "$value");
+                if (is_int($key)) {
+                    $xml->addChild("element", $value)->addAttribute("id", $key);
+                } else {
+                    $xml->addChild("$key", "$value");
+                }
             }
         }
     }
