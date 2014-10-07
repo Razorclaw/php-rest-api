@@ -8,7 +8,7 @@ class RestApi
 
     function __construct($format = 'json')
     {
-        $this->_format = strtolower($format);
+        $this->_format = isset($_GET['format']) ? strtolower($_GET['format']) : strtolower($format);
         $this->_method = strtolower($_SERVER['REQUEST_METHOD']);
         $this->_callback = NULL;
     }
@@ -26,21 +26,21 @@ class RestApi
         $data = $this->parse_data();
         if (($callback = $this->_callback)) {
             $result = $callback($data);
+            $this->display($result);
+            exit();
         } else {
-            $result = array('1' => 'empty');
+            self::raise(404, 'Not Found');
         }
-        $this->display($result);
-        exit();
     }
-	
-	static function contentType()
-	{
-		if (empty($_SERVER['CONTENT_TYPE'])) {
-			return '';
-		}
-		$contentType = explode(';', $_SERVER['CONTENT_TYPE']);
-		return $contentType[0];
-	}
+
+    static function contentType()
+    {
+        if (empty($_SERVER['CONTENT_TYPE'])) {
+            return '';
+        }
+        $contentType = explode(';', $_SERVER['CONTENT_TYPE']);
+        return $contentType[0];
+    }
 
     function parse_data()
     {
@@ -58,10 +58,10 @@ class RestApi
                 return json_decode($input, true);
             case 'text/xml':
             case 'application/xml':
-				return json_decode(json_encode((array)simplexml_load_string($input)), 1);
-			case 'text/plain':
-				return array('text' => $input);
-			default:
+                return json_decode(json_encode((array)simplexml_load_string($input)), 1);
+            case 'text/plain':
+                return array('text' => $input);
+            default:
             case 'multipart/form-data':
                 trigger_error("RestApi: Unsupported content-type: $contentType");
                 return array();
