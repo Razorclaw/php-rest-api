@@ -20,6 +20,26 @@ class RestApi
         }
         return $this;
     }
+    
+    function get($callback)
+    {
+        return $this->bind('get', $callback);
+    }
+    
+    function post($callback)
+    {
+        return $this->bind('post', $callback);
+    }
+    
+    function put($callback)
+    {
+        return $this->bind('put', $callback);
+    }
+    
+    function delete($callback)
+    {
+        return $this->bind('delete', $callback);
+    }
 
     function handle()
     {
