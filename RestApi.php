@@ -47,7 +47,6 @@ class RestApi
         $input = file_get_contents("php://input");
         $contentType = self::contentType();
         switch ($contentType) {
-			default:
             case 'application/x-www-form-urlencoded':
                 parse_str($input, $data);
                 return $data;
@@ -59,8 +58,11 @@ class RestApi
                 return json_decode($input, true);
             case 'text/xml':
             case 'application/xml':
+				return json_decode(json_encode((array)simplexml_load_string($input)), 1);
+			case 'text/plain':
+				return array('text' => $input);
+			default:
             case 'multipart/form-data':
-            case 'text/plain':
                 trigger_error("RestApi: Unsupported content-type: $contentType");
                 return array();
         }
